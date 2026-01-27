@@ -1,0 +1,17 @@
+# Core
+openai
+requests
+python-dotenv
+jinja2
+schedule
+
+# Data Fetching
+feedparser
+beautifulsoup4
+newspaper3k
+lxml_html_clean
+duckduckgo-search
+
+# Web Dashboard
+streamlit
+watchdog

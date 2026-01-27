@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables
+.env
+
+# Output and Data
+output/
+data/
+*.log
+
+# OS
+.DS_Store
