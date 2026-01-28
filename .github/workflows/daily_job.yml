@@ -1,0 +1,43 @@
+name: Daily AI News Job
+on:
+  schedule:
+    # 每天 UTC 时间 0:00 (即北京时间 8:00) 运行
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Daily Agent
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          # 如果不想把订阅者名单放公开仓库，可以用 Secret 传入，或者读取私有文件
+          # EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }} 
+        run: |
+          python src/main.py --hours 24
+
+      - name: Upload Report Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ai-news-report
+          path: daily_ai_news_agent/output/
+          retention-days: 7
