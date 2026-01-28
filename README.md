@@ -7,6 +7,7 @@ sdk: streamlit
 sdk_version: 1.31.0
 app_file: src/dashboard.py
 pinned: false
+license: mit
 ---
 
 # 🤖 AI Daily News Agent

@@ -3,7 +3,7 @@ import json
 import concurrent.futures
 from typing import List, Dict
 from openai import OpenAI
-from .config import OPENAI_API_KEY, OPENAI_BASE_URL, LLM_MODEL
+from .config import OPENAI_API_KEY, OPENAI_BASE_URL, LLM_MODEL, TOKEN_SAVING_MODE
 
 from .preferences import USER_INTERESTS, USER_DISLIKES
 from .memory_manager import MemoryManager
@@ -19,6 +19,60 @@ class NewsSummarizer:
         )
         self.model = LLM_MODEL
         self.memory = MemoryManager()
+
+    def batch_filter_articles(self, news_items: List[Dict]) -> List[Dict]:
+        """
+        [Filter Step] Use a single cheap LLM call to filter out irrelevant news by title.
+        """
+        if not news_items:
+            return []
+            
+        print(f"🔍 [Token Saving] Batch filtering {len(news_items)} articles by title...")
+        
+        # Prepare list for prompt
+        titles_text = ""
+        for i, item in enumerate(news_items):
+            titles_text += f"{i}. {item['title']} (Source: {item['source']})\n"
+            
+        prompt = f"""
+请作为一名严格的 AI 新闻编辑，从以下列表中筛选出**真正重要**且**符合用户兴趣**的新闻。
+
+用户兴趣: {", ".join(USER_INTERESTS)}
+不感兴趣: {", ".join(USER_DISLIKES)}
+
+筛选标准：
+1. 必须是 AI 领域的**重大**进展、新模型发布、重要研究或商业大事件。
+2. 剔除：教程类("How to")、过于细分的每日论文、无关的推广、重复的报道。
+3. 严格控制数量，只保留最有价值的前 30%-50%。
+
+新闻列表：
+{titles_text}
+
+请仅输出保留的新闻编号列表，格式如 JSON：
+{{
+    "keep_indices": [0, 2, 5, ...]
+}}
+"""
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model, # Can use a cheaper model here if available
+                messages=[
+                    {"role": "system", "content": "You are a strict news editor. Output JSON only."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.1,
+                response_format={"type": "json_object"}
+            )
+            result = json.loads(response.choices[0].message.content)
+            keep_indices = set(result.get("keep_indices", []))
+            
+            filtered_items = [item for i, item in enumerate(news_items) if i in keep_indices]
+            print(f"📉 Filtered down to {len(filtered_items)} items (from {len(news_items)})")
+            return filtered_items
+            
+        except Exception as e:
+            print(f"⚠️ Filter failed, keeping all items: {e}")
+            return news_items
 
     def analyze_single_article(self, item: Dict) -> Dict:
         """
@@ -74,6 +128,10 @@ class NewsSummarizer:
         """
         if not news_items:
             return {}
+
+        # 0. Pre-filtering (Token Saving)
+        if TOKEN_SAVING_MODE and len(news_items) > 5:
+            news_items = self.batch_filter_articles(news_items)
 
         # 1. Map: Parallel analysis of each article
         print(f"🧠 Analyzing {len(news_items)} articles in depth...")

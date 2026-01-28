@@ -38,3 +38,6 @@ EMAIL_RECIPIENTS = os.getenv("EMAIL_RECIPIENTS", "").split(",")
 # Report Configuration
 REPORT_OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+
+# Optimization
+TOKEN_SAVING_MODE = os.getenv("TOKEN_SAVING_MODE", "true").lower() == "true"
