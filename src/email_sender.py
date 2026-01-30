@@ -2,6 +2,7 @@
 import smtplib
 import os
 import time
+import resend
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
@@ -13,6 +14,10 @@ class EmailSender:
         self.port = SMTP_PORT
         self.user = SMTP_USER
         self.password = SMTP_PASSWORD
+        self.resend_key = os.getenv("RESEND_API_KEY")
+        
+        if self.resend_key:
+            resend.api_key = self.resend_key
         
         # Load recipients: Priority File > Env Var
         self.recipients = self._load_subscribers()
@@ -37,12 +42,39 @@ class EmailSender:
 
     def send_report(self, html_content: str, title: str):
         """
-        Send the HTML report via email (BCC Mode)
+        Send the HTML report via Resend (Preferred) or SMTP
         """
         if not self.recipients:
             print("⚠️ No email recipients configured. Skipping email.")
             return
 
+        subject = f"🤖 {title} - {datetime.now().strftime('%Y-%m-%d')}"
+
+        # 1. Try Resend (If Configured)
+        if self.resend_key:
+            try:
+                print(f"📧 Sending via Resend API to {len(self.recipients)} recipients...")
+                # Resend supports bulk sending, but best practice is batching or BCC
+                # Here we use 'bcc' field for privacy
+                params = {
+                    "from": "AI Daily Agent <onboarding@resend.dev>", # Default test domain
+                    "to": ["delivered@resend.dev"], # Placeholder for 'To' field
+                    "bcc": self.recipients,
+                    "subject": subject,
+                    "html": html_content
+                }
+                
+                # If user has verified domain, use it
+                if self.user and "@" in self.user and "gmail" not in self.user and "qq" not in self.user:
+                     params["from"] = f"AI Daily Agent <{self.user}>"
+
+                r = resend.Emails.send(params)
+                print(f"✅ Email sent via Resend! ID: {r.get('id')}")
+                return
+            except Exception as e:
+                print(f"⚠️ Resend failed: {e}. Falling back to SMTP...")
+
+        # 2. Fallback to SMTP
         if not self.user or not self.password:
             print("⚠️ SMTP credentials not configured. Skipping email.")
             return
@@ -50,7 +82,7 @@ class EmailSender:
         msg = MIMEMultipart()
         msg['From'] = f"AI Daily Agent <{self.user}>"
         # Use BCC to hide recipients list
-        msg['Subject'] = f"🤖 {title} - {datetime.now().strftime('%Y-%m-%d')}"
+        msg['Subject'] = subject
         
         msg.attach(MIMEText(html_content, 'html'))
 
@@ -58,13 +90,13 @@ class EmailSender:
         max_retries = 3
         for attempt in range(max_retries):
             try:
-                print(f"📧 Sending email to {len(self.recipients)} recipients (Attempt {attempt+1})...")
+                print(f"📧 Sending via SMTP to {len(self.recipients)} recipients (Attempt {attempt+1})...")
                 with smtplib.SMTP(self.server, self.port) as server:
                     server.starttls()
                     server.login(self.user, self.password)
                     # Send to list (SMTP handles BCC automatically if not in 'To' header)
                     server.sendmail(self.user, self.recipients, msg.as_string())
-                print("✅ Email sent successfully!")
+                print("✅ Email sent successfully via SMTP!")
                 return
             except Exception as e:
                 print(f"❌ Failed to send email: {e}")

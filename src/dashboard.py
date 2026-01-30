@@ -191,23 +191,49 @@ with tab2:
     st.markdown("### 💎 Deep Dive Research")
     st.markdown("*Generate a comprehensive research report on any AI topic.* <span class='premium-badge'>PRO</span>", unsafe_allow_html=True)
     
-    topic = st.text_input("Enter a topic (e.g., 'Agentic Workflow', 'DeepSeek Technical Architecture')", placeholder="What do you want to research?")
+    # --- Paywall Logic ---
+    is_activated = st.session_state.get("is_pro_activated", False)
     
-    if st.button("🔍 Generate Report", type="primary", disabled=not topic):
-        report_md, slides_md = generate_deep_dive(topic)
-        if report_md:
-            st.markdown("---")
-            
-            # Display Report
-            with st.expander("📄 Research Report", expanded=True):
-                st.markdown(report_md)
-                st.download_button("📥 Download Report (MD)", report_md, file_name=f"{topic}_report.md")
-            
-            # Display Slides
-            if slides_md:
-                with st.expander("🎨 Presentation Slides (Marp)", expanded=True):
-                    st.code(slides_md, language="markdown")
-                    st.download_button("📥 Download Slides (Marp MD)", slides_md, file_name=f"{topic}_slides.md")
+    if not is_activated:
+        st.info("🔒 This is a Premium feature. Please enter your activation code to unlock.")
+        
+        col_key, col_btn = st.columns([3, 1])
+        with col_key:
+            activation_code = st.text_input("Activation Code", type="password", placeholder="Enter code here...")
+        with col_btn:
+            st.write("") # Spacer
+            st.write("") 
+            if st.button("Unlock 🔓"):
+                if activation_code == "VIP888":  # Simple hardcoded check for demo
+                    st.session_state["is_pro_activated"] = True
+                    st.success("✅ Premium features unlocked!")
+                    st.rerun()
+                else:
+                    st.error("❌ Invalid activation code.")
+        
+        # Marketing Preview
+        st.markdown("---")
+        st.markdown("#### ✨ Why Upgrade?")
+        st.markdown("""
+        - **Unlimited Deep Research**: Generate 3000+ word reports on any topic.
+        - **Multi-Source Synthesis**: Aggregates info from 20+ search engines.
+        - **Export to PDF/PPT**: Ready-to-present formats.
+        """)
+        st.image("https://via.placeholder.com/800x400.png?text=Deep+Dive+Report+Preview", caption="Sample Deep Dive Report")
+        
+    else:
+        # Unlocked Content
+        topic = st.text_input("Enter a topic (e.g., 'Agentic Workflow', 'DeepSeek Technical Architecture')", placeholder="What do you want to research?")
+        
+        if st.button("🔍 Generate Report", type="primary", disabled=not topic):
+            report_md = generate_deep_dive(topic)
+            if report_md:
+                st.markdown("---")
+                
+                # Display Report
+                with st.expander("📄 Research Report", expanded=True):
+                    st.markdown(report_md)
+                    st.download_button("📥 Download Report (MD)", report_md, file_name=f"{topic}_report.md")
 
 with tab3:
     st.subheader("📜 Historical Reports")

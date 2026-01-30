@@ -30,14 +30,15 @@ class Reporter:
             print("No data to report.")
             return
 
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        current_time = datetime.now()
+        now = current_time.strftime("%Y-%m-%d %H:%M:%S")
         try:
             html_content = self.template.render(data=data, generated_at=now)
         except Exception as e:
             print(f"Error rendering template: {e}")
             return
 
-        filename = f"ai_news_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+        filename = f"ai_news_report_{current_time.strftime('%Y%m%d_%H%M%S')}.html"
         filepath = os.path.join(REPORT_OUTPUT_DIR, filename)
         
         with open(filepath, "w", encoding="utf-8") as f:
@@ -45,6 +46,60 @@ class Reporter:
             
         print(f"Report generated successfully: {filepath}")
         return filepath
+
+    def generate_wechat_html(self, data: dict):
+        """
+        Generate WeChat-optimized HTML report
+        """
+        if not data:
+            return None
+            
+        try:
+            template = self.env.get_template("wechat_template.html")
+            
+            # Prepare context for template
+            context = {
+                "date": datetime.now().strftime("%Y-%m-%d"),
+                "summary_intro": data.get("intro", ""),
+                "hot_news": [],
+                "other_news": []
+            }
+            
+            # Process Top Stories
+            for item in data.get("top_stories", []):
+                context["hot_news"].append({
+                    "title": item.get("title"),
+                    "source": item.get("source"),
+                    "image": item.get("image_url") or "", # Fallback logic in template?
+                    "one_sentence_summary": item.get("summary"),
+                    "key_points": item.get("key_points", []),
+                    "insight": item.get("impact", "")
+                })
+                
+            # Process Categories
+            for cat, items in data.get("categories", {}).items():
+                for item in items:
+                    context["other_news"].append({
+                        "title": item.get("title"),
+                        "one_sentence_summary": item.get("summary"),
+                        "source": item.get("source")
+                    })
+            
+            html_content = template.render(**context)
+            
+            # Save file
+            filename = f"wechat_post_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+            filepath = os.path.join(REPORT_OUTPUT_DIR, filename)
+            
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(html_content)
+                
+            print(f"✅ WeChat HTML ready: {filepath}")
+            return filepath
+            
+        except Exception as e:
+            print(f"Error generating WeChat HTML: {e}")
+            return None
 
     def generate_markdown(self, data: dict):
         """
@@ -71,6 +126,12 @@ class Reporter:
                     md += f"- **[{story['title']}]({story['link']})** ({story['source']}): {story['summary']}\n"
                 md += "\n"
         
+        # --- Disclaimer ---
+        md += "\n---\n"
+        md += "### ⚠️ 免责声明\n"
+        md += "本报告由 AI 自动生成，内容仅供参考。投资者应自行承担风险。本文不构成任何投资建议。\n"
+        # ------------------
+
         return md
 
     def generate_wechat_markdown(self, data: dict):
@@ -118,6 +179,7 @@ class Reporter:
         
         md += "---\n"
         md += "*本报告由 AI Agent 自动生成，内容仅供参考。*\n"
+        md += "*免责声明：本文不构成任何投资建议，请独立判断。*\n" # Disclaimer
         
         return md
 

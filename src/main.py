@@ -12,7 +12,7 @@ from src.summarizer import NewsSummarizer
 from src.reporter import Reporter
 from src.email_sender import EmailSender
 
-def run_daily_job(hours=24):
+def run_daily_job(hours=24, send_email=False):
     print("🚀 Starting Daily AI News Agent...")
     
     # 1. Fetch RSS
@@ -56,13 +56,17 @@ def run_daily_job(hours=24):
             html_content = f.read()
 
         # Send Email
-        # print("📧 Sending email report...")
-        # email_sender = EmailSender()
-        # email_sender.send_report(html_content, summary_data.get('title', 'AI Daily News'))
+        if send_email:
+            print("📧 Sending email report...")
+            email_sender = EmailSender()
+            email_sender.send_report(html_content, summary_data.get('title', 'AI Daily News'))
 
         # Also print a quick markdown summary to console
         md_summary = reporter.generate_markdown(summary_data)
         wechat_md = reporter.generate_wechat_markdown(summary_data)
+        
+        # Generate WeChat-ready HTML
+        wechat_html_path = reporter.generate_wechat_html(summary_data)
         
         print("\n" + "="*50)
         print("📱 微信公众号版本 (可直接复制):")
@@ -71,8 +75,11 @@ def run_daily_job(hours=24):
         
         if report_path:
             print(f"✅ Report ready: {report_path}")
+            if wechat_html_path:
+                print(f"✅ WeChat HTML ready: {wechat_html_path}")
+            
             # Try to open the report automatically on macOS
-            if sys.platform == 'darwin':
+            if sys.platform == 'darwin' and not send_email: # Don't popup if running in automation
                 os.system(f"open '{report_path}'")
                 
     except Exception as e:
@@ -81,8 +88,9 @@ def run_daily_job(hours=24):
 def main():
     parser = argparse.ArgumentParser(description="Daily AI News Agent")
     parser.add_argument("--hours", type=int, default=24, help="Fetch news from the last N hours (default: 24)")
+    parser.add_argument("--email", action="store_true", help="Send email report to subscribers")
     args = parser.parse_args()
-    run_daily_job(args.hours)
+    run_daily_job(args.hours, send_email=args.email)
 
 if __name__ == "__main__":
     main()
