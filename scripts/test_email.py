@@ -1,4 +1,9 @@
 import os
+import sys
+
+# Add parent directory to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from src.email_sender import EmailSender
 
 def test_send():

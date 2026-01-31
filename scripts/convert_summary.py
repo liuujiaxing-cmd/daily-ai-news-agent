@@ -1,5 +1,10 @@
 import markdown
 import os
+import sys
+
+# Add parent directory to sys.path
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(PROJECT_ROOT)
 
 # Custom CSS for a clean, professional look
 CSS = """
@@ -109,4 +114,6 @@ def convert_md_to_html(input_file, output_file):
         print(f"❌ Error converting file: {e}")
 
 if __name__ == "__main__":
-    convert_md_to_html("project_summary.md", "project_summary.html")
+    input_path = os.path.join(PROJECT_ROOT, "docs", "project_summary.md")
+    output_path = os.path.join(PROJECT_ROOT, "docs", "project_summary.html")
+    convert_md_to_html(input_path, output_path)

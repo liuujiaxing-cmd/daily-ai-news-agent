@@ -1,6 +1,10 @@
 import os
 import sys
 import argparse
+
+# Add parent directory to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from src.email_sender import EmailSender
 
 def add_subscriber_if_not_exists(email: str):
