@@ -36,7 +36,7 @@ jobs:
           python src/main.py --hours 24
 
       - name: Upload Report Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ai-news-report
           path: daily_ai_news_agent/output/
