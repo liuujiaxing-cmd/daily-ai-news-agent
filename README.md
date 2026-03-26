@@ -12,6 +12,8 @@ license: MIT
 
 # 🤖 AI Daily News Agent
 
+English | [简体中文](./README_zh.md)
+
 An intelligent, autonomous agent that fetches, analyzes, and summarizes the latest AI news from around the world.
 
 ## ✨ Features
