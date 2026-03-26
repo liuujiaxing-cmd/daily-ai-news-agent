@@ -206,5 +206,31 @@
         "summary": "DeepMind联合创始人David Silver离职创业，专注于开发超级智能系统，可能涉及强化学习和AI基础研究。"
       }
     ]
+  },
+  {
+    "date": "2026-03-26",
+    "intro": "今日AI行业动态综述：在OpenRouter等API聚合器方案兴起、OpenAI推进模型规范的同时，行业持续关注LLM推理瓶颈、供应链安全及内存压缩等底层技术挑战。",
+    "top_stories": [
+      {
+        "title": "LeCun的10亿美元种子轮融资是否标志着自回归LLM在形式推理上已遇瓶颈？",
+        "summary": "Yann LeCun新创公司获10亿美元种子轮融资，开发基于能量模型的数学验证代码生成技术，挑战Transformer架构。"
+      },
+      {
+        "title": "OpenAI模型规范方法解析",
+        "summary": "OpenAI发布Model Spec框架，平衡AI系统安全性、用户自由与责任，指导模型行为发展。"
+      },
+      {
+        "title": "LiteLLM供应链攻击威胁AI管道及API密钥安全",
+        "summary": "LiteLLM在LLM/智能体管道中广泛使用，其供应链攻击可窃取API密钥和云凭证，凸显AI工作流依赖信任风险。"
+      },
+      {
+        "title": "[D] 2026年LLM API聚合器：OpenRouter与替代方案对比",
+        "summary": "分析OpenRouter、直接API和Yotta Labs AI Gateway三种LLM API聚合方案的优缺点，针对不同模型需求提供选择建议。"
+      },
+      {
+        "title": "谷歌发布TurboQuant新型AI内存压缩算法，网友戏称其为“Pied Piper”",
+        "summary": "谷歌发布TurboQuant AI内存压缩算法，可大幅减少AI运行时内存占用而不影响性能，计划在ICLR 2026会议上展示。"
+      }
+    ]
   }
 ]

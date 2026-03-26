@@ -9,14 +9,12 @@ on:
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     permissions:
       contents: write  # Allow committing reports back to repo
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
     - name: Set up Python 3.10
       uses: actions/setup-python@v4

@@ -8,11 +8,9 @@ on:
 jobs:
   run-agent:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -38,7 +36,7 @@ jobs:
           python src/main.py --hours 24
 
       - name: Upload Report Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: ai-news-report
           path: daily_ai_news_agent/output/
